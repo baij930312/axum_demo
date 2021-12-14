@@ -1,34 +1,39 @@
 use core::panic;
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc, sync::Mutex};
 
+use bytes::Bytes;
 use tokio::net::{TcpListener, TcpStream};
 
 use mini_redis::{Command, Connection, Frame};
 use tokio;
 
+type DB = Arc<Mutex<HashMap<String, Bytes>>>;
+
 #[tokio::main]
 async fn main() {
     let tcp = TcpListener::bind("127.0.0.1:6379").await.unwrap();
+    let db = Arc::new(Mutex::new(HashMap::new()));
+
     loop {
         let (socket, _) = tcp.accept().await.unwrap();
+        let db = db.clone();
         tokio::spawn(async move {
-            process(socket).await;
+            process(socket, db).await;
         });
     }
 }
 
-async fn process(stream: TcpStream) {
+async fn process(stream: TcpStream, db: DB) {
     let mut conn = Connection::new(stream);
-    let mut db = HashMap::new();
     while let Some(frame) = conn.read_frame().await.unwrap() {
         let res = match Command::from_frame(frame).unwrap() {
             Command::Set(cmd) => {
-                println!("{:?}", cmd);
-                db.insert(cmd.key().to_string(), cmd.value().to_vec());
-                println!("{:?}", db);
+                let mut db = db.lock().unwrap();
+                db.insert(cmd.key().to_string(), cmd.value().clone());
                 Frame::Simple("OK".to_string())
             }
             Command::Get(cmd) => {
+                let db = db.lock().unwrap();
                 if let Some(value) = db.get(cmd.key()) {
                     Frame::Bulk(value.clone().into())
                 } else {
@@ -40,6 +45,4 @@ async fn process(stream: TcpStream) {
         };
         conn.write_frame(&res).await.unwrap();
     }
-    // if  {
-    // };
 }
