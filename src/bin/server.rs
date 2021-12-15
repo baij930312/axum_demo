@@ -39,7 +39,6 @@ async fn process(stream: TcpStream, db: DB) {
                     Frame::Null
                 }
             }
-
             cmd => panic!("no {:?}", cmd),
         };
         conn.write_frame(&res).await.unwrap();
