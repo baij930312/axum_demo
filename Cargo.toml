@@ -18,6 +18,10 @@ tower = { version = "0.4", features = ["full"] }
 tower-http = { version = "0.2", features = ["full"] }
 
 mini-redis = "0.4"
+int-enum = "*" 
+enum-iterator = "*"
+
+rand = "*"
 
 bytes = "1"
 futures = { version = "0.3", default-features = false }

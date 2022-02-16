@@ -10,7 +10,7 @@ async fn action(input: Option<i32>) -> Option<String> {
     Some(i.to_string())
 }
 
-// #[tokio::main]
+//  #[tokio::main]
 // async fn main() {
 //     let (tx1, mut rx1) = mpsc::channel(128);
 
@@ -84,7 +84,6 @@ async fn main() {
             }
         }
     });
-
 
     sleep(Duration::from_secs(2));
 }

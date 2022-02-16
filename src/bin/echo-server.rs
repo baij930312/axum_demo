@@ -13,7 +13,7 @@ async fn main() {
                 Ok(0) => return,
                 Ok(n) => {
                     if socket.write_all(&buf[..n]).await.is_err(){
-                        return;
+                         return;
                     };
                 }
                 Err(_) => return,

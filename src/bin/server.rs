@@ -18,7 +18,7 @@ async fn main() {
         let db = db.clone();
         tokio::spawn(async move {
             process(socket, db).await;
-        });
+        }); 
     }
 } 
 
