@@ -31,7 +31,12 @@ fn main() {
         left: Some(Rc::new(RefCell::new(n2))),
         right: Some(Rc::new(RefCell::new(n1))),
     };
-    let mut n4 = TreeNode::new(4);
+    let mut n9 = TreeNode::new(9);
+    let mut n4 = TreeNode {
+        val: 4,
+        left: Some(Rc::new(RefCell::new(n9))),
+        right: None,
+    };
     let mut n5 = TreeNode::new(5);
     let mut n6 = TreeNode {
         val: 6,
@@ -44,10 +49,15 @@ fn main() {
         right: Some(Rc::new(RefCell::new(n6))),
     };
 
-    let mut v = vec![];
-    postorder(Some(Rc::new(RefCell::new(n7.clone()))), &mut v);
-    println!("{:?}", v);
-    println!("{:?}", levelorder(Some(Rc::new(RefCell::new(n7)))));
+    // let mut v = vec![];
+    // dfs(Some(Rc::new(RefCell::new(n7.clone()))), &mut v);
+    // for i in v.iter() {
+    //     if let Some(node) = i {
+    //         println!("{}", node.borrow().val);
+    //     }
+    // }
+    // println!("{:?}", v);
+    println!("{:?}", find_max_depth(Some(Rc::new(RefCell::new(n7)))));
 }
 
 fn preorder(root: Option<Rc<RefCell<TreeNode>>>, v: &mut Vec<i32>) {
@@ -153,4 +163,75 @@ fn levelorder(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
         v.push(node.borrow().val);
     }
     v
+}
+
+fn dfs(node: Option<Rc<RefCell<TreeNode>>>, v: &mut Vec<Option<Rc<RefCell<TreeNode>>>>) {
+    if v.contains(&node) {
+        return;
+    }
+    v.push(node.clone());
+    let mut childs = vec![];
+    if let Some(node) = node {
+        if node.borrow().left.is_some() {
+            childs.push(node.borrow().left.clone());
+        }
+        if node.borrow().right.is_some() {
+            childs.push(node.borrow().right.clone());
+        }
+    }
+    for node in childs {
+        if v.contains(&node) {
+            continue;
+        }
+        dfs(node, v);
+    }
+}
+
+fn dfs_traversal(node: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+    let mut stack: Vec<Option<Rc<RefCell<TreeNode>>>> = vec![];
+    let mut v: Vec<i32> = vec![];
+    stack.push(node);
+    while let Some(Some(node)) = stack.pop() {
+        v.push(node.borrow().val);
+        if node.borrow().right.is_some() {
+            stack.push(node.borrow().right.clone());
+        }
+        if node.borrow().left.is_some() {
+            stack.push(node.borrow().left.clone());
+        }
+    }
+    v
+}
+
+fn find_max_depth(node: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+    match node {
+        Some(node) => {
+            let left = find_max_depth(node.borrow().left.clone());
+            let right = find_max_depth(node.borrow().right.clone());
+            1 + left.max(right)
+        }
+        None => 0,
+    }
+}
+
+fn find_max_depth_bfs(node: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+    let mut queue = VecDeque::new();
+    queue.push_front(node);
+    let mut depth = 0;
+    while !queue.is_empty() {
+        let size = queue.len();
+        println!("size: {}", size);
+        depth += 1;
+        for _ in 0..size {
+            if let Some(Some(node)) = queue.pop_back() {
+                if node.borrow().left.is_some() {
+                    queue.push_front(node.borrow().left.clone());
+                }
+                if node.borrow().right.is_some() {
+                    queue.push_front(node.borrow().right.clone());
+                }
+            }
+        }
+    }
+    depth
 }
